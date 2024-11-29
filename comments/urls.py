@@ -1,17 +1,15 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, CommentViewSet, FileViewSet, CaptchaAPIView
+from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
-# Маршруты для API
-router = DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
-router.register(r'comments', CommentViewSet, basename='comment')
-router.register(r'files', FileViewSet, basename='file')
+app_name = 'comments'
 
 urlpatterns = [
-    # Эндпоинт для генерации CAPTCHA
-    path('captcha/', CaptchaAPIView.as_view(), name='captcha'),
-    # Включение маршрутов от DRF
-    path('', include(router.urls)),
-]
-
+    path('', views.PostListView.as_view(), name='post_list'),
+    path('<int:year>/<int:month>/<int:day>/<int:post_id>/', views.PostDetailView.as_view(), name='post_detail'),
+    path('captcha/', include('captcha.urls')),
+    path('get_captcha/', views.get_captcha, name='get_captcha'),
+    path('api/v1/comments/<int:year>/<int:month>/<int:day>/<int:post_id>/', views.CommentAPIView.as_view(), name='comment-list'),
+    path('api/v1/comments/<int:year>/<int:month>/<int:day>/<int:post_id>/create/', views.CommentAPIView.as_view(), name='create-comment'),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
