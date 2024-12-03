@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Post, Comment
+from .models import Comment
 from .forms import CommentForm
 from bleach import clean
 from django.conf import settings
 from lxml import etree
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import CommentSerializer, PostSerializer, ClientInfoSerializer
+from .serializers import CommentSerializer, ClientInfoSerializer
 import json
 from rest_framework import pagination
 from PIL import Image
@@ -37,11 +37,8 @@ def get_captcha(request):
 
 # Класс APIView для работы с комментариями
 class CommentAPIView(APIView):
-    # Метод GET для получения комментариев к посту
-    def get(self, request, year, month, day, post_id):
-        post = get_object_or_404(Post, id=post_id, status='published', publish__year=year, publish__month=month,
-                                 publish__day=day)
-
+    # Метод GET для получения комментариев
+    def get(self, request):
         # Извлекаем параметры сортировки и порядка
         sort_by = request.GET.get('sort_by')
         order = request.GET.get('order', 'asc')
@@ -49,21 +46,21 @@ class CommentAPIView(APIView):
         # Выбор сортировки в зависимости от параметра sort_by
         if sort_by == 'user_name':
             if order == 'desc':
-                comments = Comment.objects.filter(post=post).order_by('-user_name')
+                comments = Comment.objects.filter().order_by('-user_name')
             else:
-                comments = Comment.objects.filter(post=post).order_by('user_name')
+                comments = Comment.objects.filter().order_by('user_name')
         elif sort_by == 'email':
             if order == 'desc':
-                comments = Comment.objects.filter(post=post).order_by('-email')
+                comments = Comment.objects.filter().order_by('-email')
             else:
-                comments = Comment.objects.filter(post=post).order_by('email')
+                comments = Comment.objects.filter().order_by('email')
         elif sort_by == 'date_added':
             if order == 'desc':
-                comments = Comment.objects.filter(post=post).order_by('-created_at')
+                comments = Comment.objects.filter().order_by('-created_at')
             else:
-                comments = Comment.objects.filter(post=post).order_by('created_at')
+                comments = Comment.objects.filter().order_by('created_at')
         else:
-            comments = Comment.objects.filter(post=post).select_related('post', 'parent_comment').order_by('-created_at')
+            comments = Comment.objects.filter().order_by('-created_at')
 
         # Преобразование комментариев в словарь
         comments_dict = {comment.id: CommentSerializer(comment).data for comment in comments}
@@ -94,10 +91,7 @@ class CommentAPIView(APIView):
         paginator.page_size = 25
         page = paginator.paginate_queryset(root_comments, request)
 
-        # Сериализация поста и возврат результата
-        post_serializer = PostSerializer(post)
         result = {
-            'post': post_serializer.data,
             'comments': page,
             'page': request.GET.get('page', 1),
             'total_pages': paginator.page.paginator.num_pages,
@@ -105,7 +99,7 @@ class CommentAPIView(APIView):
         return Response(result)
 
     # Метод POST для создания нового комментария
-    def post(self, request, year, month, day, post_id):
+    def post(self, request):
         if request.method != 'POST':
             return JsonResponse({'success': False, 'message': 'Метод не поддерживается'}, status=405)
         try:
@@ -128,11 +122,9 @@ class CommentAPIView(APIView):
                 return JsonResponse({'success': False, 'message': 'Неправильная CAPTCHA'}, status=400)
 
             parent_id = data.get('parent_comment')
-            post = get_object_or_404(Post, id=post_id)
             parent_comment = get_object_or_404(Comment, id=parent_id) if parent_id else None
 
             comment = form.save(commit=False)
-            comment.post = post
             comment.parent_comment = parent_comment
 
             # Сериализация информации о пользователе
@@ -162,11 +154,9 @@ class CommentAPIView(APIView):
             try:
                 image_tmp_file = request.FILES.get('image')
                 if image_tmp_file:
-
                     valid_formats = ['image/jpeg', 'image/png', 'image/gif']
                     if image_tmp_file.content_type not in valid_formats:
-                        return JsonResponse({'success': False, 'message': 'Недопустимый формат изображения'},
-                                            status=400)
+                        return JsonResponse({'success': False, 'message': 'Недопустимый формат изображения'}, status=400)
 
                     img = Image.open(image_tmp_file)
                     width, height = img.size
@@ -174,9 +164,7 @@ class CommentAPIView(APIView):
                     if width > max_size[0] or height > max_size[1]:
                         img = img.resize(max_size)
                         output_buffer = BytesIO()
-
                         img.save(output_buffer, format=image_tmp_file.content_type.split('/')[-1].upper())
-
                         image_tmp_file = InMemoryUploadedFile(output_buffer, 'ImageField', f'{image_tmp_file.name}',
                                                               image_tmp_file.content_type, output_buffer.tell, None)
 
@@ -190,9 +178,7 @@ class CommentAPIView(APIView):
                 file_tmp_file = request.FILES.get('file')
                 if file_tmp_file:
                     if not file_tmp_file.name.endswith('.txt'):
-                        return JsonResponse(
-                            {'success': False, 'message': 'Недопустимый формат файла. Разрешены только .txt файлы.'},
-                            status=400)
+                        return JsonResponse({'success': False, 'message': 'Недопустимый формат файла. Разрешены только .txt файлы.'}, status=400)
                     if file_tmp_file.size > 102400:  # 100 КБ
                         return JsonResponse({'success': False, 'message': 'Файл слишком большой'}, status=400)
 
@@ -207,36 +193,22 @@ class CommentAPIView(APIView):
         else:
             errors = form.errors.as_json()
             errors_dict = json.loads(errors)  # Преобразуем JSON-строку в словарь
-            message = errors_dict["image"][0]["message"]
+            print(errors_dict)  # Выводим все ошибки
+            message = errors_dict.get("image", [{}])[0].get("message", "Произошла ошибка при отправке комментария.")
             return JsonResponse({'success': False, 'message': message}, status=400)
 
-# Класс View для отображения списка постов
-class PostListView(View):
+# Класс View для отображения списка комментариев
+class CommentListView(View):
     def get(self, request):
-        posts = Post.objects.all()
-        for post in posts:
-            post.formatted_date = post.publish.strftime('%Y/%m/%d')
-        return render(request, 'comments/index.html', {'posts': posts})
-
-# Класс View для отображения деталей поста
-class PostDetailView(View):
-    def get(self, request, year, month, day, post_id):
-        post = get_object_or_404(Post, id=post_id, status='published', publish__year=year, publish__month=month, publish__day=day)
-        return render(request, 'comments/detail.html', {
-            'post': post,
-            'comment_form': CommentForm(),
-            'post_id': post.id,
-            'year': post.publish.year,
-            'month': post.publish.month,
-            'day': post.publish.day
-        })
+        comments = Comment.objects.filter(parent_comment__isnull=True).order_by('-created_at')
+        return render(request, 'comments/index.html', {'comments': comments})
 
 # Функция для валидации XHTML разметки
 def validate_xhtml(text):
-        try:
-            etree.fromstring("<root>" + text + "</root>")
-            return True
-        except etree.XMLSyntaxError:
-            return False
+    try:
+        etree.fromstring("<root>" + text + "</root>")
+        return True
+    except etree.XMLSyntaxError:
+        return False
 
 
