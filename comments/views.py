@@ -18,6 +18,7 @@ from django_user_agents.utils import get_user_agent
 from django.http import JsonResponse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
+from urllib.parse import unquote
 
 # Задаем разрешенные теги и атрибуты для очистки текста
 BLEACH_ALLOWED_TAGS = settings.BLEACH_ALLOWED_TAGS
@@ -156,7 +157,8 @@ class CommentAPIView(APIView):
                 if image_tmp_file:
                     valid_formats = ['image/jpeg', 'image/png', 'image/gif']
                     if image_tmp_file.content_type not in valid_formats:
-                        return JsonResponse({'success': False, 'message': 'Недопустимый формат изображения'}, status=400)
+                        return JsonResponse({'success': False, 'message': 'Недопустимый формат изображения'},
+                                            status=400)
 
                     img = Image.open(image_tmp_file)
                     width, height = img.size
@@ -178,13 +180,17 @@ class CommentAPIView(APIView):
                 file_tmp_file = request.FILES.get('file')
                 if file_tmp_file:
                     if not file_tmp_file.name.endswith('.txt'):
-                        return JsonResponse({'success': False, 'message': 'Недопустимый формат файла. Разрешены только .txt файлы.'}, status=400)
+                        return JsonResponse(
+                            {'success': False, 'message': 'Недопустимый формат файла. Разрешены только .txt файлы.'},
+                            status=400)
                     if file_tmp_file.size > 102400:  # 100 КБ
                         return JsonResponse({'success': False, 'message': 'Файл слишком большой'}, status=400)
 
+                    # Декодирование имени файла
+                    decoded_name = unquote(file_tmp_file.name)
+                    file_tmp_file.name = decoded_name
+
                     comment.text_file = file_tmp_file
-                    new_name = comment.text_file.name.split('/')[-1]
-                    comment.text_file.name = new_name
             except Exception as e:
                 print(f"Ошибка при сохранении файла: {e}")
 
