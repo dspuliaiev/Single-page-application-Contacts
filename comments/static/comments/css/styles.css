@@ -9,7 +9,7 @@ body {
   max-width: 840px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #fff;
+  background-color: #FAFAFA;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -36,45 +36,42 @@ a:hover {
   text-decoration: underline;
 }
 .comment {
-  border: 2px solid gray;
-  border-radius: 10px;
+  border: 0px solid gray;
+  /*border-radius: 10px;*/
   padding: 20px;
   margin: 10px;
   background-color: white;
 }
 
-.comment-sort button {
-  background-color: #195ba1;
-  color: #fff;
+.comment-sort button,
+.add-comment-button,
+.tag-buttons button,
+.captcha-button,
+button {
+  background-color: #E0E0E0; /* Цвет кнопок как у блока .user-info */
+  color: black; /* Цвет текста кнопок как у блока .user-info */
   border: none;
   border-radius: 4px;
   padding: 5px 10px;
   margin-right: 10px;
   cursor: pointer;
 }
-.add-comment-button {
-  background-color: #195ba1;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
+
 .user-info {
   display: block;
   justify-content: space-between;
-  border: 2px solid black;
-  background-color: grey;
-  color: white;
-  padding: 5px;
+  /*border: 1px solid white;*/
+  background-color: #E0E0E0;
+  color: black;
+  padding: 10px;
   font-size: large;
-  border-radius: 10px;
+  border-radius: 0px;
 }
 
 .comment-text {
   padding: 20px 0 20px 0;
   margin-bottom: 20px;
-  border-bottom-style: solid;
+  border-bottom: 2px solid #E0E0E0;
 }
 
 ul {
@@ -110,7 +107,7 @@ ul {
 }
 .section-title {
   font-size: 24px;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 2px solid #E0E0E0;
   margin-bottom: 20px;
   padding-bottom: 10px;
 }
@@ -119,24 +116,7 @@ ul {
   flex-direction: column;
   gap: 1em;
 }
-.tag-buttons button {
-  background-color: #195ba1;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  margin-right: 10px;
-  cursor: pointer;
-}
 
-.captcha-button {
-  background-color: #195ba1;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
 .form-field {
   display: flex;
   flex-direction: column;
@@ -164,15 +144,6 @@ ul {
 .form-field img {
   max-width: 100%;
   height: auto;
-}
-
-button {
-  padding: 0.5em;
-  background-color: #195ba1;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 button:disabled {
@@ -254,4 +225,29 @@ button:disabled {
 }
 
 
+.comment-sort button,
+.add-comment-button,
+.tag-buttons button,
+.captcha-button,
+button {
+  background-color: #E0E0E0;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  padding: 7.5px 15px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 1.0em;
+}
+
+
+/* Header */
+.header {
+    background-color: #E0E0E0;
+    color: black;
+    padding: 10px 20px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
 

@@ -32,7 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    'rest_framework',
+    'channels',
     'captcha',
     'comments',
 ]
@@ -45,11 +46,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
 
 TEMPLATES = [
     {
@@ -67,7 +68,14 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = 'backend.asgi.application'
 WSGI_APPLICATION = 'backend.wsgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Database
@@ -132,11 +140,6 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-]
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
 
 CAPTCHA_LENGTH = 6
 CAPTCHA_FONT_SIZE = 30
