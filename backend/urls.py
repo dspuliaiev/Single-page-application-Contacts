@@ -8,4 +8,3 @@ urlpatterns = [
     path('', include('comments.urls', namespace='comments')),
     path('captcha/', include(captcha_urls)),
 ]
-

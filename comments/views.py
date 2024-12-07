@@ -19,6 +19,11 @@ from django.http import JsonResponse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 from urllib.parse import unquote
+import logging
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+logger = logging.getLogger(__name__)
 
 # Задаем разрешенные теги и атрибуты для очистки текста
 BLEACH_ALLOWED_TAGS = settings.BLEACH_ALLOWED_TAGS
@@ -36,7 +41,6 @@ def get_captcha(request):
         }
         return JsonResponse(response_data)
 
-# Класс APIView для работы с комментариями
 class CommentAPIView(APIView):
     # Метод GET для получения комментариев
     def get(self, request):
@@ -195,6 +199,23 @@ class CommentAPIView(APIView):
                 print(f"Ошибка при сохранении файла: {e}")
 
             comment.save()
+
+            # Сериализация комментария
+            serialized_comment = CommentSerializer(comment).data
+
+            # Логирование перед отправкой комментария через WebSocket
+            logger.info(f"Отправка комментария через WebSocket: {serialized_comment}")
+
+            # Отправка комментария через WebSocket
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "chat_room",
+                {
+                    "type": "broadcast_new_comment",
+                    "comment": serialized_comment,
+                }
+            )
+
             return JsonResponse({'success': True, 'comment_id': comment.id})
         else:
             errors = form.errors.as_json()
@@ -216,5 +237,3 @@ def validate_xhtml(text):
         return True
     except etree.XMLSyntaxError:
         return False
-
-

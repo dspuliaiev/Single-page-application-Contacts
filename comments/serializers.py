@@ -22,4 +22,3 @@ class ClientInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientInfo
         fields = ['ip_address', 'user_agent', 'user_name']
-

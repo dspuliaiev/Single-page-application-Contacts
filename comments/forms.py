@@ -16,4 +16,3 @@ class CommentForm(forms.ModelForm):
                              widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}))
     file = forms.FileField(label='Upload Text File', required=False,
                            widget=forms.ClearableFileInput(attrs={'class': 'custom-file-input'}))
-

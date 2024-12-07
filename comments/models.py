@@ -1,7 +1,5 @@
 from django.db import models
-from django.utils import timezone
-from django.contrib.auth.models import User
-from django.urls import reverse
+
 
 class ClientInfo(models.Model):
     ip_address = models.GenericIPAddressField()
@@ -26,6 +24,4 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.user_name} on {self.created_at}'
-
-
 
