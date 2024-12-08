@@ -27,6 +27,21 @@ new Vue({
         },
     },
     methods: {
+        findCommentById(id, comments = this.comments) {
+        for (const comment of comments) {
+            if (comment.id === id) {
+                return comment;
+            }
+
+            if (Array.isArray(comment.children)) {
+                const found = this.findCommentById(id, comment.children);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    },
         getCaptcha() {
             axios.get('/get_captcha/')
                 .then(response => {
@@ -146,34 +161,54 @@ new Vue({
         },
     },
     created() {
-        this.updateComments();
-        this.loadPage(1);
+    this.updateComments();
+    this.loadPage(1);
 
-        // Устанавливаем WebSocket-соединение
-        const socket = new WebSocket('ws://localhost:8000/ws/chat/');
+    // Устанавливаем WebSocket-соединение
+    const socket = new WebSocket('ws://localhost:8000/ws/chat/');
 
-        socket.onopen = (event) => {
-            console.log('Соединение установлено');
-        };
+    socket.onopen = (event) => {
+        console.log('Соединение установлено');
+    };
 
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'new_comment') {
-                console.log('Получен новый комментарий:', data.data);
+    socket.onmessage = (event) => {
+        try {
+            const message = JSON.parse(event.data);
 
-                // Проверяем, что comments корректно инициализирован
-                if (!Array.isArray(this.comments)) {
-                    console.error('comments не является массивом, инициализирую заново');
-                    this.comments = [];
+            if (message.type === 'new_comment' && message.data) {
+                const newComment = message.data;
+
+                // Проверка структуры нового комментария
+                if (typeof newComment.is_root === 'undefined') {
+                    console.error('Свойство is_root отсутствует у комментария:', newComment);
+                    return;
                 }
 
-                this.comments.push(data.data);
-                console.log('Комментарии после добавления:', this.comments);
-            }
-        };
+                if (newComment.is_root) {
+                    // Добавляем корневой комментарий в начало списка (LIFO)
+                    this.comments.unshift(newComment);
+                } else {
+                    // Обновляем дочерний комментарий
+                    const parentComment = this.findCommentById(newComment.parent_comment_id);
 
-        socket.onclose = (event) => {
-            console.log('Соединение закрыто');
-        };
+                    if (parentComment) {
+                        if (!Array.isArray(parentComment.children)) {
+                            parentComment.children = [];
+                        }
+                        parentComment.children.unshift(newComment);  // Добавляем в начало дочерних комментариев
+                    } else {
+                        console.warn('Родительский комментарий не найден для:', newComment);
+                    }
+                }
+
+                console.log('Комментарии после обновления:', this.comments);
+            } else {
+                console.error('Некорректные данные WebSocket:', message);
+            }
+        } catch (error) {
+            console.error('Ошибка обработки сообщения WebSocket:', error);
+        }
+    };
+
     },
 });

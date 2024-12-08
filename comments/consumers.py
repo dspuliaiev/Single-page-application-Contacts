@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 class CommentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # Определяем имя группы WebSocket
         self.room_group_name = "chat_room"
 
         # Присоединяемся к группе
@@ -26,14 +25,27 @@ class CommentConsumer(AsyncWebsocketConsumer):
         )
 
     async def broadcast_new_comment(self, event):
-        # Получаем сериализованные данные комментария
-        comment = event['comment']
+        try:
+            # Проверка типа события
+            if event.get("type") != "broadcast_new_comment":
+                logger.warning(f"Некорректный тип события: {event.get('type')}")
+                return
 
-        # Логирование перед отправкой комментария на фронт
-        logger.info(f"Отправка комментария на фронт: {comment}")
+            # Проверка структуры данных
+            if "data" not in event:
+                logger.error(f"Отсутствует ключ 'data' в событии: {event}")
+                return
 
-        # Отправляем сообщение всем клиентам, кроме автора
-        await self.send(text_data=json.dumps({
-            'type': 'new_comment',
-            'data': comment,
-        }))
+            # Обработка комментария
+            comment = event["data"]
+            logger.info(f"Отправка комментария на фронт: {comment}")
+
+            # Отправка данных на клиент
+            await self.send(text_data=json.dumps({
+                "type": "new_comment",
+                "data": comment,
+            }))
+        except Exception as e:
+            logger.error(f"Ошибка в broadcast_new_comment: {e}. Полученные данные: {event}")
+
+
