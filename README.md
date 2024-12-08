@@ -48,9 +48,3 @@ SPA-Contacts is a full-featured single page application (SPA) designed to provid
 7. **Open http://localhost:8000 in a browser. You should see the main page.**:
 
 
-## Db schema
-![Alt text](./media/shema.jpeg)
-
-## Demo
-![Alt text](./media/Comments_SPA.jpeg)
-
