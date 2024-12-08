@@ -89,7 +89,7 @@ class CommentAPIView(APIView):
             captcha_store = CaptchaStore.objects.filter(hashkey=c_key).first()
             c_value = data.get('captcha_value', '')
 
-            if not captcha_store or captcha_store.response != c_value:
+            if not captcha_store or captcha_store.response.upper() != c_value.upper():
                 return JsonResponse({'success': False, 'message': 'Неправильная CAPTCHA'}, status=400)
 
             form = CommentForm(data, request.FILES)
