@@ -1,7 +1,7 @@
-# SPA-Contacts
+# SPA-Comments
 
 ### Description
-SPA-Contacts is a full-featured single page application (SPA) designed to provide real-time dynamic user interaction. This project demonstrates the integration of a modern SPA frontend with a powerful Django backend.
+SPA-Comments is a full-featured single page application (SPA) designed to provide real-time dynamic user interaction. This project demonstrates the integration of a modern SPA frontend with a powerful Django backend.
 
 ## Technologies
 
