@@ -118,10 +118,51 @@ class CommentAPIView(APIView):
             if not validate_xhtml(comment.text):
                 return JsonResponse({'success': False, 'message': 'Invalid XHTML markup'}, status=400)
 
-            # Обработка изображений и текстовых файлов (как в вашем коде)
-            comment = process_uploaded_files(comment, request)
+            # Обработка изображения
+            try:
+                image_tmp_file = request.FILES.get('image')
+                if image_tmp_file:
+                    valid_formats = ['image/jpeg', 'image/png', 'image/gif']
+                    if image_tmp_file.content_type not in valid_formats:
+                        return JsonResponse({'success': False, 'message': 'Недопустимый формат изображения'}, status=400)
+
+                    img = Image.open(image_tmp_file)
+                    width, height = img.size
+                    max_size = (320, 240)
+                    if width > max_size[0] or height > max_size[1]:
+                        img = img.resize(max_size)
+                        output_buffer = BytesIO()
+                        img.save(output_buffer, format=image_tmp_file.content_type.split('/')[-1].upper())
+                        image_tmp_file = InMemoryUploadedFile(output_buffer, 'ImageField', f'{image_tmp_file.name}',
+                                                              image_tmp_file.content_type, output_buffer.tell, None)
+
+                    comment.image = image_tmp_file
+
+            except Exception as e:
+                print(f"Ошибка при сохранении изображения: {e}")
+
+            # Обработка текстового файла
+            try:
+                file_tmp_file = request.FILES.get('text_file')
+                if not file_tmp_file:
+                    print("Файл text_file не передан в запросе.")
+                else:
+                    print(f"Получен файл: {file_tmp_file.name}, размер: {file_tmp_file.size} байт")
+                if file_tmp_file:
+                    if not file_tmp_file.name.endswith('.txt'):
+                        return JsonResponse({'success': False, 'message': 'Недопустимый формат файла. Разрешены только .txt файлы.'}, status=400)
+                    if file_tmp_file.size > 102400:  # 100 КБ
+                        return JsonResponse({'success': False, 'message': 'Файл слишком большой'}, status=400)
+
+                    comment.text_file = file_tmp_file
+                    new_name = comment.text_file.name.split('/')[-1]
+                    comment.text_file.name = new_name
+            except Exception as e:
+                print(f"Ошибка при сохранении файла: {e}")
+
 
             comment.save()
+
 
             serialized_comment = CommentSerializer(comment).data
             channel_layer = get_channel_layer()
@@ -150,10 +191,7 @@ def validate_xhtml(text):
         return False
 
 
-def process_uploaded_files(comment, request):
-    try:
-        # Обработка изображений и файлов
-        pass  # Вставьте вашу логику
-    except Exception as e:
-        logger.error(f"Ошибка обработки файлов: {e}")
-    return comment
+
+
+
+

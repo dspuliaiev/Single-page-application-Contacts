@@ -13,7 +13,7 @@ new Vue({
             captcha: '',
             text: '',
             image: null,
-            file: null,
+            text_file: null,
             csrf_token: '',
             sort_by: '',
             order: 'asc',
@@ -136,7 +136,7 @@ new Vue({
             formData.append('captcha_value', this.commentForm.captcha.value);
             formData.append('captcha_key', this.commentForm.captcha.key);
             formData.append('image', this.commentForm.image);
-            formData.append('file', this.commentForm.file);
+            formData.append('text_file', this.commentForm.file);
 
             const postURL = '/api/v1/comments/create/';
             let config = {

@@ -34,13 +34,13 @@ SPA-Contacts is a full-featured single page application (SPA) designed to provid
     docker-compose up     
    ```
    
-5. **Second terminal:**:
+5. **Second terminal**:
     ```bash
     python manage.py makemigrations
     python manage.py migrate
    ```
 
-6. **Third terminal:**:
+6. **Third terminal**:
     ```bash  
    daphne backend.asgi:application   
    ```

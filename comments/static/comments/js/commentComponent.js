@@ -52,9 +52,9 @@ const Comment = {
                                 <input type="file" id="image" class="custom-file-input" @change="handleImageUpload">
                             </div>
                             <div class="form-file">
-                                <label for="image">Загрузить TXT-файл:</label>
-                                <input type="file" id="image" class="custom-file-input" @change="handleFileUpload">
-                            </div>
+    <label for="text_file">Загрузить TXT-файл:</label>
+    <input type="file" id="text_file" name="text_file" class="custom-file-input" @change="handleFileUpload">
+</div>
                             <div class="form-field">
                                 <label for="captcha">Captcha:</label>
                             </div>
@@ -92,7 +92,7 @@ const Comment = {
                 captcha: '',
                 text: '',
                 image: null,
-                file: null,
+                text_file: null,
             },
             errorMessage: '',
         };
@@ -166,7 +166,7 @@ const Comment = {
             formData.append('captcha_value', this.commentForm.captcha.value);
             formData.append('captcha_key', this.commentForm.captcha.key);
             formData.append('image', this.commentForm.image);
-            formData.append('file', this.commentForm.file);
+            formData.append('text_file', this.commentForm.file);
             formData.append('parent_comment', this.replyToCommentId);
 
             const postURL = '/api/v1/comments/create/';
