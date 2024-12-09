@@ -22,11 +22,11 @@ SPA-Comments is a full-featured single page application (SPA) designed to provid
     ```
 2. **Make sure you have Poetry installed. Activate the Poetry virtual environment:**:
     ```bash
-    python poetry shell    
+    poetry shell    
     ```
 3. **Install dependencies**:
     ```bash
-    python poetry install    
+    poetry install    
     ```
     
 4. **First terminal:**: (Make sure you have Docker installed) :**:
