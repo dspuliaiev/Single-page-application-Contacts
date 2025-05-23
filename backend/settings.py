@@ -156,7 +156,7 @@ MEDIA_URL = "/media/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CAPTCHA_LENGTH = 6
+CAPTCHA_LENGTH = 3
 CAPTCHA_FONT_SIZE = 30
 CAPTCHA_NOISE_FUNCTIONS = ("captcha.helpers.noise_dots",)
 CAPTCHA_BACKGROUND_COLOR = "#ffffff"
